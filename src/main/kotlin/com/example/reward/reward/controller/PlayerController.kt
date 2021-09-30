@@ -10,13 +10,14 @@ class PlayerController(
     private var playerRewardServiceNames: PlayerRewardServiceNames
 ) {
     // Выводим Награду за босса
-    @GetMapping("typeQuest/{namePlayer}/{typeQuest}/{typeReward}")
-    fun playerRewardService(@PathVariable namePlayer: String, @PathVariable typeQuest: String, @PathVariable typeReward: String): List<PlayerResponse> =
-        playerRewardServiceNames.getQuestReward(typeQuest, namePlayer, typeReward)
+    @GetMapping("{typeReward}/{typeQuest}/{namePlayer}")
+    fun playerRewardService(@PathVariable typeReward: String, @PathVariable typeQuest: String, @PathVariable namePlayer: String): List<PlayerResponse> =
+        playerRewardServiceNames.getQuestRewardPlayer(typeReward, typeQuest, namePlayer)
 
     // Принимаем GET коллекцию имен и выводим в json
-    @GetMapping("player")
-    fun getNamePlayers(@RequestParam names: List<String>): List<PlayerResponse> =
-        playerRewardServiceNames.getPlayers(names)
+
+    @GetMapping("{typeReward}/{typeQuest}/player")
+    fun getNamePlayers(@PathVariable typeReward: String, @RequestParam names: List<String>, @PathVariable typeQuest: String): List<PlayerResponse> =
+        playerRewardServiceNames.getQuestRewardPlayers(typeReward, names, typeQuest)
 
 }

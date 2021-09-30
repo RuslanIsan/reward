@@ -7,22 +7,18 @@ interface Reward {
     fun reward(): Int
 }
 
-interface RewardFactory {
-    fun getGoldReward(typeQuest : String) : Reward
-    fun getGemReward(typeQuest : String) : Reward
+interface GetRewardFactory {
+    fun getReward(typeQuest : String) : Reward
 }
 
-class GoldRewardFactory : RewardFactory {
-    override fun getGoldReward(typeQuest: String): Reward {
+
+class GoldRewardFactory : GetRewardFactory {
+    override fun getReward(typeQuest: String): Reward {
         return when (typeQuest) {
             "QuestBoss" -> QuestBoss()
             "QuestCollectingThings" -> QuestCollectingThings()
             else -> throw IllegalArgumentException("No class $typeQuest")
         }
-    }
-
-    override fun getGemReward(typeQuest: String): Reward {
-        TODO("Not yet implemented")
     }
 
     class QuestBoss : Reward {
@@ -38,10 +34,8 @@ class GoldRewardFactory : RewardFactory {
     }
 }
 
-class GemRewardFactory : RewardFactory {
-
-
-    override fun getGemReward(typeQuest: String): Reward {
+class GemRewardFactory : GetRewardFactory {
+    override fun getReward(typeQuest: String): Reward {
         return when (typeQuest){
             "QuestRaidBoss" -> QuestRaidBoss()
             "QuestArena" -> QuestArena()
@@ -60,22 +54,15 @@ class GemRewardFactory : RewardFactory {
         override fun reward(): Int =
             (3..10).random()
     }
-
-    override fun getGoldReward(typeQuest: String): Reward {
-        TODO("Not yet implemented")
-    }
-
 }
 
 @Service
 class PlayerRewardServiceNames {
-    private val goldFactory = GoldRewardFactory()
-    private val gemFactory = GemRewardFactory()
 
-    fun getQuestReward(typeQuest: String, namePlayer: String, typeReward: String): List<PlayerResponse> {
+    fun getQuestRewardPlayer(typeReward: String, typeQuest: String, namePlayer: String): List<PlayerResponse> {
         val userReward = when (typeReward){
-            "Gold" -> createReward(goldFactory, typeQuest)
-            "Gem" -> createReward(gemFactory, typeQuest)
+            "Gold" -> GoldRewardFactory().getReward(typeQuest)
+            "Gem" -> GemRewardFactory().getReward(typeQuest)
             else -> throw IllegalArgumentException("There is no type of reward $typeReward")
         }
 
@@ -89,19 +76,27 @@ class PlayerRewardServiceNames {
     }
 
     // Получаем строку имён, распарсиваем её и присваиваем награду
-    fun getPlayers(names: List<String>): List<PlayerResponse> =
-        names.map {
-            val userReward = createReward(goldFactory, "QuestBoss") // Генерируем награду
+    fun getQuestRewardPlayers(typeReward: String, names: List<String>, typeQuest: String): List<PlayerResponse> {
+        val userReward = when (typeReward) {
+            "Gold" -> GoldRewardFactory().getReward(typeQuest)
+            "Gem" -> GemRewardFactory().getReward(typeQuest)
+            else -> throw IllegalArgumentException("There is no type of reward $typeReward")
+        }
+        return names.map {
             PlayerResponse (
                 name = it,
-                reward = "Gold",
+                reward = userReward.nameReward,
                 amount = userReward.reward()
             )
         }
+    }
 
-    private fun createReward(factory: RewardFactory, name : String) : Reward {
+
+/*
+    private fun createReward(factory: GemRewardFactory, name: String) : Reward {
         return factory.getGoldReward(name)
     }
+    */
 }
 
 data class PlayerResponse (
