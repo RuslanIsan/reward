@@ -6,3 +6,8 @@ enum class TypeOfQuest {
     RAID_BOSS,
     ARENA
 }
+
+enum class TypeOfReward {
+    GOLD,
+    GEM
+}

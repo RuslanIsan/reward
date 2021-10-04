@@ -1,70 +1,64 @@
 package com.example.reward.reward.service
 
+import com.example.reward.reward.converter.PlayerConverter
+import com.example.reward.reward.dto.PlayerRequest
+import com.example.reward.reward.dto.PlayerResponse
 import com.example.reward.reward.dto.TypeOfQuest
+import com.example.reward.reward.dto.TypeOfReward
 import com.example.reward.reward.model.GemRewardFactory
 import com.example.reward.reward.model.GoldRewardFactory
 import org.springframework.stereotype.Service
 
 @Service
-class PlayerRewardServiceNames {
+class PlayerRewardServiceNames(val playerConverter: PlayerConverter) {
 
-    fun getQuestRewardPlayer(typeReward: String, typeQuest: TypeOfQuest, namePlayer: String): List<PlayerResponse> {
+    fun getQuestRewardPlayer(
+        typeReward: TypeOfReward,
+        typeQuest: TypeOfQuest,
+        namePlayer: String
+    ): List<PlayerResponse> {
         val userReward = when (typeReward) {
-            "Gold" -> GoldRewardFactory().getReward(typeQuest)
-            "Gem" -> GemRewardFactory().getReward(typeQuest)
-            else -> throw IllegalArgumentException("There is no type of reward $typeReward")
+            TypeOfReward.GOLD -> GoldRewardFactory().getReward(typeQuest)
+            TypeOfReward.GEM -> GemRewardFactory().getReward(typeQuest)
         }
 
-        return listOf(
-            PlayerResponse(
-                name = namePlayer,
-                reward = userReward.nameReward,
-                amount = userReward.reward()
-            )
+        return playerConverter.convertToPlayerResponses(
+            names = listOf(namePlayer),
+            reward = userReward.nameReward,
+            amount = userReward.reward()
         )
     }
 
     // Получаем строку имён, распарсиваем её и присваиваем награду
-    fun getQuestRewardPlayers(typeReward: String, names: List<String>, typeQuest: TypeOfQuest): List<PlayerResponse> {
+    fun getQuestRewardPlayers(
+        typeReward: TypeOfReward,
+        names: List<String>,
+        typeQuest: TypeOfQuest
+    ): List<PlayerResponse> {
         val userReward = when (typeReward) {
-            "Gold" -> GoldRewardFactory().getReward(typeQuest)
-            "Gem" -> GemRewardFactory().getReward(typeQuest)
-            else -> throw IllegalArgumentException("There is no type of reward $typeReward")
+            TypeOfReward.GOLD -> GoldRewardFactory().getReward(typeQuest)
+            TypeOfReward.GEM -> GemRewardFactory().getReward(typeQuest)
         }
-        return names.map {
-            PlayerResponse(
-                name = it,
-                reward = userReward.nameReward,
-                amount = userReward.reward()
-            )
-        }
+        return playerConverter.convertToPlayerResponses(
+            names = names,
+            reward = userReward.nameReward,
+            amount = userReward.reward()
+        )
     }
 
     fun postQuestRewardPlayer(playerRequest: PlayerRequest): List<PlayerResponse> {
         val userReward = when (playerRequest.typeReward) {
-            "Gold" -> GoldRewardFactory().getReward(playerRequest.typeQuest)
-            "Gem" -> GemRewardFactory().getReward(playerRequest.typeQuest)
-            else -> throw IllegalArgumentException("There is no type of reward ${playerRequest.typeReward}")
+            TypeOfReward.GOLD -> GoldRewardFactory().getReward(playerRequest.typeQuest)
+            TypeOfReward.GEM -> GemRewardFactory().getReward(playerRequest.typeQuest)
         }
 
-        return listOf(
-            PlayerResponse(
-                name = playerRequest.name,
-                reward = userReward.nameReward,
-                amount = userReward.reward()
-            )
+        return playerConverter.convertToPlayerResponses(
+            names = listOf(playerRequest.name),
+            reward = userReward.nameReward,
+            amount = userReward.reward()
         )
     }
 }
 
-data class PlayerResponse(
-    val name: String,
-    val reward: String,
-    val amount: Int
-)
 
-data class PlayerRequest(
-    val name: String,
-    val typeReward: String,
-    val typeQuest: TypeOfQuest
-)
+
